@@ -1,0 +1,8 @@
+Hadoop Multi Node Installation Steps
+
+1.) Create 4 instances of AWS EC2
+    - download the private key (in my case its CCS-key.pem)
+    - Namenode		172.31.87.239		ec2-52-91-79-23.compute-1.amazonaws.com
+      SNN				172.31.92.232	ec2-44-211-201-220.compute-1.amazonaws.com
+      Datanode1		172.31.90.90		ec2-54-172-112-1.compute-1.amazonaws.com
+      Datanode2		172.31.81.201		ec2-18-234-125-141.compute-1.amazonaws.com
