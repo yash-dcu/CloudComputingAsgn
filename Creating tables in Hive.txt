@@ -1,47 +1,51 @@
-5.) Create and load Table for Dataset 1 in hive
+1.) change properties of Hive to use ACID transactions
+set hive.support.concurrency = true;
+set hive.txn.manager = org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
+
+2.) Create and load to Table for Dataset1 (CSV)
 - creating tables
+create table csv_dataset1 (`date` string, sender string, recepient1 string, subject string, text string) row format delimited fields terminated by ',' lines terminated by '\n' tblproperties ('skip.header.line.count'='1');
+
+- loading data
+load data inpath '/all_data/dataset1.csv' into table csv_dataset1;
+
+
+3.) Create and load to Table for Dataset2 (CSV)
+- creating tables
+create table csv_dataset2 (sender_name string, email string, subject string, datetime string, cleaned_content string) row format delimited fields terminated by ',' lines terminated by '\n' tblproperties ('skip.header.line.count'='1');
+
+- loading data
+load data inpath '/all_data/dataset2.csv' into table csv_dataset2;
+
+4.) creating ORC Databases for Dataset1 and Dataset2
+
 create table dataset1 (`date` string, sender string, recepient1 string, subject string, text string)
 clustered by (`date`) into 4 buckets row format delimited fields terminated by ',' lines terminated by '\n'
 stored as orc
 tblproperties ('transactional'='true','skip.header.line.count'='1');
 
-- loading data
-load data inpath '/all_data/dataset1_1.csv' into table dataset1;
-load data inpath '/all_data/dataset1_2.csv' into table dataset1;
-load data inpath '/all_data/dataset1_3.csv' into table dataset1;
-load data inpath '/all_data/dataset1_4.csv' into table dataset1;
-load data inpath '/all_data/dataset1_5.csv' into table dataset1;
-load data inpath '/all_data/dataset1_6.csv' into table dataset1;
-
-3.) Create and load Table for Dataset 2 in hive
-
-- creating table 
 create table dataset2 (sender_name string, email string, subject string, datetime string, cleaned_content string)
 clustered by (datetime) into 4 buckets row format delimited fields terminated by ',' lines terminated by '\n'
 stored as orc
 tblproperties ('transactional'='true','skip.header.line.count'='1');
 
-- loading data
-load data inpath '/all_data/dataset2_1.csv' into table dataset2;
 
-4.) Merging both table to create final table dataset
+5.) Loading both csv tables to orc tables
 
-- creating table Dataset
+insert into dataset1 select `date`, sender, recepient1, subject, text from csv_dataset1;
+insert into dataset2 select sender_name, email, subject, datetime, cleaned_content from csv_dataset2;
+
+
+6.) Creating final table for our dataset
+
 create table dataset (sender_id string, date_time string, subject string, body string)
 clustered by (date_time) into 4 buckets
 stored as orc
 tblproperties ('transactional'='true');
 
--loading data from dataset1
+
+7.) loading data from dataset1 and dataset2 to dataset
+
 insert into table dataset select sender, `date`, subject, text from dataset1;
-
--loading data from dataset2
 insert into table dataset select email, datetime, subject, cleaned_content from dataset2;
-
-
-
-select count(distinct body) from email_data full join bag_of_words on email_data.body rlike bag_of_words.words;
-
-
-
