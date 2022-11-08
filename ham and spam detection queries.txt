@@ -9,7 +9,7 @@ load data inpath '/all_data/words.csv' into table words.csv
 
 3.) Add spam_label column to dataset and set default value as 0
 alter table dataset add columns (spam_label int);
-update table dataset set spam_label=0;
+update dataset set spam_label=0;
 
 
 4.) update spam_label values in dataset 
