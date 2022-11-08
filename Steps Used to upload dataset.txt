@@ -1,72 +1,21 @@
-1.) Upload dataset in the format CSV to HDFS
+1.) Unzipping dataset files
+sudo apt install unzip
+unzip dataset1_1.zip -d dataset/raw ------(repeated for all the zip files)
+cat dataset1_1.csv dataset1_2.csv dataset1_3.csv dataset1_4.csv dataset1_5.csv dataset1_6.csv > dataset1.csv
 
-- local to VM instance
-scp -i ccs-key.pem dataset1_1.csv dataset1_2.csv dataset1_3.csv dataset1_4.csv dataset1_5.csv dataset1_6.csv dataset2_1.csv ubuntu@ec2-52-91-79-23.compute-1.amazonaws.com:~/dataset/
 
-- create new folder in HDFS
+2.) Removing 1st columns from both data sets
+cut -d , -f 2-6 dataset1.csv > ../dataset1.csv
+cut -d , -f 2-6 dataset1.csv > ../dataset2.csv
+
+
+3.) create new folder in HDFS
 hdfs dfs -mkdir /all_data
-
-- Put csv files at /all_data
-hdfs dfs -put dataset1_1.csv /all_data
-hdfs dfs -put dataset1_2.csv /all_data
-hdfs dfs -put dataset1_3.csv /all_data
-hdfs dfs -put dataset1_4.csv /all_data
-hdfs dfs -put dataset1_5.csv /all_data
-hdfs dfs -put dataset1_6.csv /all_data
-hdfs dfs -put dataset2_1.csv /all_data
-
-2.) Create and load Table for Dataset 1 in hive
-
-- creating table
-create table dataset1 (`date` string, sender string, recepient1 string, subject string, text string)
-clustered by (`date`) into 4 buckets row format delimited fields terminated by ',' lines terminated by '\n'
-stored as orc
-tblproperties ('transactional'='true','skip.header.line.count'='1');
-
-- loading data
-load data inpath '/all_data/dataset1_1.csv' into table dataset1;
-load data inpath '/all_data/dataset1_2.csv' into table dataset1;
-load data inpath '/all_data/dataset1_3.csv' into table dataset1;
-load data inpath '/all_data/dataset1_4.csv' into table dataset1;
-load data inpath '/all_data/dataset1_5.csv' into table dataset1;
-load data inpath '/all_data/dataset1_6.csv' into table dataset1;
-
-3.) Create and load Table for Dataset 2 in hive
-
-- creating table 
-create table dataset2 (sender_name string, email string, subject string, datetime string, cleaned_content string)
-clustered by (datetime) into 4 buckets row format delimited fields terminated by ',' lines terminated by '\n'
-stored as orc
-tblproperties ('transactional'='true','skip.header.line.count'='1');
-
-- loading data
-load data inpath '/all_data/dataset2_1.csv' into table dataset2;
-
-4.) Merging both table to create final table dataset
-
-- creating table Dataset
-create table dataset (sender_id string, date_time string, subject string, body string)
-clustered by (date_time) into 4 buckets
-stored as orc
-tblproperties ('transactional'='true');
-
--loading data from dataset1
-insert into table dataset select sender, `date`, subject, text from dataset1;
-
--loading data from dataset2
-insert into table dataset select email, datetime, subject, cleaned_content from dataset2;
+hdfs dfs -chmod g+w /all_data
+hdfs dfs -mkdir /raw_dataset
+hdfs dfs -chmod g+w /raw_dataset
 
 
-
-select count(distinct body) from email_data full join bag_of_words on email_data.body rlike bag_of_words.words;
-
-
-
-
-
-
-
-
-
-
-
+4.) Put csv files at /all_data
+hdfs dfs -put dataset1.csv /all_data
+hdfs dfs -put dataset2.csv /all_data
