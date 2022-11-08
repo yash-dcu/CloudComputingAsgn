@@ -1,0 +1,6 @@
+1.) Removing Null Values and validating email
+delete from dataset where sender_id='';
+delete from dataset where sender_id is Null;
+delete from dataset where sender_id !rlike '@(.*)';
+delete from dataset where body='';
+delete from dataset where body is Null;
