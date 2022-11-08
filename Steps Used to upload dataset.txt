@@ -18,7 +18,7 @@ hdfs dfs -put dataset2_1.csv /all_data
 2.) Create and load Table for Dataset 1 in hive
 
 - creating table
-create table dataset1 (`#` int, date string, sender string, recepient1 string, subject string, text string) row format delimited fields terminated by ','
+create table dataset1 (`#` int, `date` string, sender string, recepient1 string, subject string, text string) row format delimited fields terminated by ','
 clustered by (date) into 4 buckets
 stored as orc
 tblproperties ('transactional'='true','skip.header.line.count'='1');
